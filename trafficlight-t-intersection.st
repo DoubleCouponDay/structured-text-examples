@@ -66,7 +66,17 @@ FUNCTION main_road
         inducer_was_triggered := TRUE;
 
     ELSE IF red_timer.Q = TRUE THEN
+        red_trigger := FALSE;
 
+        IF button_was_pressed = TRUE THEN
+            system_state := 1;
+            button_was_pressed := FALSE;
+
+        ELSE_IF inducer_was_triggered = TRUE
+            system_state := 2;
+            inducer_was_triggered := FALSE;
+
+        END_IF;
     END_IF;
 END_FUNCTION
 
