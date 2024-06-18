@@ -40,103 +40,107 @@ END_IF;
 
 if power_state THEN
     CASE system_state OF
-        0: //let the main road through by default
-            H7 := TRUE;
-            H8 := FALSE;
+        0: main_road()
+        1: button_pressed()
+        2: car_detected()
+        3: pedestrians_walk()
+        4: sidestreet()
+        5: sidestreet_orange()
+    END_CASE;
 
-            H2 := FALSE;
-            H1 := TRUE;
-            H4 := FALSE;
-            H6 := TRUE;
+FUNCTION main_road
+    H7 := TRUE;
+    H8 := FALSE;
 
-            IF S1_S2 = TRUE THEN
-                red_timer(IN := red_trigger, PT := delay1);
-                red_trigger := TRUE;
-                button_was_pressed := TRUE:
+    H2 := FALSE;
+    H1 := TRUE;
+    H4 := FALSE;
+    H6 := TRUE;
 
-            ELSE IF S3 = TRUE THEN
-                inducer_was_triggered := TRUE;
+    IF S1_S2 = TRUE THEN
+        red_timer(IN := red_trigger, PT := delay1);
+        red_trigger := TRUE;
+        button_was_pressed := TRUE:
 
-            ELSE IF red_timer.Q = TRUE THEN
-                red_trigger := FALSE;
+    ELSE IF S3 = TRUE THEN
+        inducer_was_triggered := TRUE;
 
-                IF button_was_pressed = TRUE THEN
-                    system_state := 1;
-                    button_was_pressed := FALSE;
+    ELSE IF red_timer.Q = TRUE THEN
 
-                ELSEIF inducer_was_triggered = TRUE
-                    system_state := 2;
-                    inducer_was_triggered := FALSE;
+    END_IF;
+END_FUNCTION
 
-                END_IF;
-            END_IF;
-                    
-        1: //button was activated
-            H6 := FALSE;
-            H5 := TRUE;
+FUNCTION button_pressed
+    H6 := FALSE;
+    H5 := TRUE;
 
-            yellow_timer(IN := yellow_trigger, PT := delay1);
-            yellow_trigger := TRUE;
+    yellow_timer(IN := yellow_trigger, PT := delay1);
+    yellow_trigger := TRUE;
 
-            IF yellow_timer.Q = TRUE THEN
-                yellow_trigger := FALSE;
-                system_state := 3;
+    IF yellow_timer.Q = TRUE THEN
+        yellow_trigger := FALSE;
+        system_state := 3;
 
-            END_IF;
+    END_IF;
+END_FUNCTION
 
-        2: //inducer was activated
-            H6 := FALSE;
-            H5 := TRUE;
+FUNCTION car_detected
+    H6 := FALSE;
+    H5 := TRUE;
 
-            yellow_timer(IN := yellow_trigger, PT := delay1);
-            yellow_trigger := TRUE;
+    yellow_timer(IN := yellow_trigger, PT := delay1);
+    yellow_trigger := TRUE;
 
-            IF yellow_timer.Q = TRUE THEN
-                yellow_trigger := FALSE;
-                system_state := 4;
-            END_IF;
+    IF yellow_timer.Q = TRUE THEN
+        yellow_trigger := FALSE;
+        system_state := 4;
+    END_IF;
+END_FUNCTION
 
-        3: //pedestrian lights green
-            H5 := FALSE;
-            H4 := TRUE;
-            
-            H7 := FALSE;
-            H8 := TRUE;
+FUNCTION pedestrians_walk
+    H5 := FALSE;
+    H4 := TRUE;
+    
+    H7 := FALSE;
+    H8 := TRUE;
 
-            green_timer(IN := green_trigger, PT := delay2);
-            green_trigger := TRUE;
+    green_timer(IN := green_trigger, PT := delay2);
+    green_trigger := TRUE;
 
-            IF green_timer.Q = TRUE THEN
-                green_trigger := FALSE;
-                system_state := 0;
-            END_IF;
+    IF green_timer.Q = TRUE THEN
+        green_trigger := FALSE;
+        system_state := 0;
+    END_IF;
+END_FUNCTION
 
-        4: //side road green
-            H5 := FALSE;
-            H4 := TRUE;
+FUNCTION sidestreet
+    H5 := FALSE;
+    H4 := TRUE;
 
-            H1 := FALSE;
-            H3 := TRUE;
+    H1 := FALSE;
+    H3 := TRUE;
 
-            green_timer(IN := green_trigger, PT := delay2);
-            green_trigger := TRUE;
+    green_timer(IN := green_trigger, PT := delay2);
+    green_trigger := TRUE;
 
-            IF green_timer.Q = TRUE THEN
-                green_trigger := FALSE;
-                system_state := 5;
-            END_IF;
+    IF green_timer.Q = TRUE THEN
+        green_trigger := FALSE;
+        system_state := 5;
+    END_IF;
+END_FUNCTION
 
-        5: //side road orange
-            H3 := FALSE;
-            H2 := TRUE;
+FUNCTION sidestreet_orange
+    H3 := FALSE;
+    H2 := TRUE;
 
-            yellow_timer(IN := yellow_trigger, PT := delay1);
-            yellow_trigger := TRUE;
+    yellow_timer(IN := yellow_trigger, PT := delay1);
+    yellow_trigger := TRUE;
 
-            IF yellow_timer.Q = TRUE THEN
-                yellow_trigger := FALSE;
-                system_state := 0;
-            END_IF;
+    IF yellow_timer.Q = TRUE THEN
+        yellow_trigger := FALSE;
+        system_state := 0;
+    END_IF;
+END_FUNCTION
 
 END_PROGRAM
 
