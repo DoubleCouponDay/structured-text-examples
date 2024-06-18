@@ -1,4 +1,4 @@
-PROGRAM PLC_PRG
+PROGRAM trafficlight_t_intersection
 VAR
     redlight_mainroad AT %Q550.0: BOOL; //red light, main road
     orangelight_mainroad AT %Q550.1: BOOL; //orange light, main road

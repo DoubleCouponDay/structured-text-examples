@@ -1,4 +1,4 @@
-PROGRAM PLC_PRC
+PROGRAM backup_generator
 VAR
     X1_0: BOOL; //boilers thermal overload input
     X1_1: BOOL; //water temperature thermal overload input
