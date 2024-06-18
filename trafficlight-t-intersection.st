@@ -72,7 +72,7 @@ FUNCTION main_road
             system_state := 1;
             button_was_pressed := FALSE;
 
-        ELSE_IF inducer_was_triggered = TRUE
+        ELSE IF inducer_was_triggered = TRUE
             system_state := 2;
             inducer_was_triggered := FALSE;
 
