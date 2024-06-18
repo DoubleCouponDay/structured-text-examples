@@ -1,22 +1,23 @@
 PROGRAM PLC_PRG
 VAR
-    H1 AT %Q550.0: BOOL; //red light, side road
-    H2 AT %Q550.1: BOOL; //orange light, side road
-    H3 AT %Q550.2: BOOL; //green light, side road
+    redlight_mainroad AT %Q550.0: BOOL; //red light, main road
+    orangelight_mainroad AT %Q550.1: BOOL; //orange light, main road
+    greenlight_mainroad AT %Q550.2: BOOL; //green light, main road
 
-    H4 AT %Q550.3: BOOL; //red light, side road
-    H5 AT %Q550.4: BOOL; //orange light, side road
-    H6 AT %Q550.5: BOOL; //green light, side road
+    redlight_sidestreet AT %Q550.3: BOOL; //red light, side road
+    orangelight_sidestreet AT %Q550.4: BOOL; //orange light, side road
+    greenlight_sidestreet AT %Q550.5: BOOL; //green light, side road
 
-    H7 AT %Q550.6: BOOL := TRUE; //red light pedestrian
-    H8 AT %Q550.7: BOOL; //green light pedestrian
+    redlight_pedestrian AT %Q550.6: BOOL; //red light pedestrian
+    greenlight_pedestrian AT %Q550.7: BOOL; //green light pedestrian
+
     S1_S2 AT %I500.2: BOOL; //pedestrian button
     S3 AT %I500.5: BOOL; //car sensor induction loop
 
     SYSTEM_ON AT %I500.0: BOOL; //on switch
 
     power_state: BOOL
-    system_state: INT := 0;
+    system_state: INT;
     button_was_pressed: BOOL;
     inducer_was_triggered: BOOL;
 
@@ -40,7 +41,7 @@ END_IF;
 
 if power_state THEN
     CASE system_state OF
-        0: main_road()
+        0: mainroad()
         1: button_pressed()
         2: car_detected()
         3: pedestrians_walk()
@@ -48,14 +49,17 @@ if power_state THEN
         5: sidestreet_orange()
     END_CASE;
 
-FUNCTION main_road
-    H7 := TRUE;
-    H8 := FALSE;
+FUNCTION mainroad
+    redlight_mainroad := FALSE;
+    orangelight_mainroad := FALSE;
+    greenlight_mainroad := TRUE;
 
-    H2 := FALSE;
-    H1 := TRUE;
-    H4 := FALSE;
-    H6 := TRUE;
+    redlight_sidestreet := TRUE;
+    orangelight_sidestreet := FALSE;
+    greenlight_sidestreet := FALSE;
+
+    redlight_pedestrian := TRUE;
+    greenlight_pedestrian := FALSE;
 
     IF S1_S2 = TRUE THEN
         red_timer(IN := red_trigger, PT := delay1);
@@ -80,39 +84,40 @@ FUNCTION main_road
     END_IF;
 END_FUNCTION
 
-FUNCTION button_pressed
-    H6 := FALSE;
-    H5 := TRUE;
+FUNCTION mainroad_orange
+    VAR_INPUT
+        next_state: INT;
+    END_VAR;
+
+    greenlight_mainroad := FALSE;
+    orangelight_mainroad := TRUE;
+    redlight_mainroad := FALSE;
 
     yellow_timer(IN := yellow_trigger, PT := delay1);
     yellow_trigger := TRUE;
 
     IF yellow_timer.Q = TRUE THEN
         yellow_trigger := FALSE;
-        system_state := 3;
-
+        system_state := next_state;
     END_IF;
+
+END_FUNCTION
+
+FUNCTION button_pressed
+    mainroad_orange(3);
 END_FUNCTION
 
 FUNCTION car_detected
-    H6 := FALSE;
-    H5 := TRUE;
-
-    yellow_timer(IN := yellow_trigger, PT := delay1);
-    yellow_trigger := TRUE;
-
-    IF yellow_timer.Q = TRUE THEN
-        yellow_trigger := FALSE;
-        system_state := 4;
-    END_IF;
+    mainroad_orange(4);
 END_FUNCTION
 
 FUNCTION pedestrians_walk
-    H5 := FALSE;
-    H4 := TRUE;
+    greenlight_sidestreet := FALSE;
+    orangelight_sidestreet := FALSE;
+    redlight_sidestreet := TRUE;
     
-    H7 := FALSE;
-    H8 := TRUE;
+    redlight_pedestrian := FALSE;
+    greenlight_pedestrian := TRUE;
 
     green_timer(IN := green_trigger, PT := delay2);
     green_trigger := TRUE;
@@ -124,11 +129,13 @@ FUNCTION pedestrians_walk
 END_FUNCTION
 
 FUNCTION sidestreet
-    H5 := FALSE;
-    H4 := TRUE;
+    greenlight_mainroad := FALSE;
+    orangelight_mainroad := FALSE;
+    redlight_mainroad := TRUE;
 
-    H1 := FALSE;
-    H3 := TRUE;
+    greenlight_sidestreet := TRUE;
+    orangelight_sidestreet := FALSE;
+    redlight_sidestreet := FALSE;
 
     green_timer(IN := green_trigger, PT := delay2);
     green_trigger := TRUE;
@@ -140,8 +147,9 @@ FUNCTION sidestreet
 END_FUNCTION
 
 FUNCTION sidestreet_orange
-    H3 := FALSE;
-    H2 := TRUE;
+    greenlight_sidestreet := FALSE;
+    orangelight_sidestreet := TRUE;
+    redlight_sidestreet := FALSE;
 
     yellow_timer(IN := yellow_trigger, PT := delay1);
     yellow_trigger := TRUE;
